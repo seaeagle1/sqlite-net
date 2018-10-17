@@ -1917,6 +1917,30 @@ namespace SQLite
 		}
 
 		/// <summary>
+		/// Deletes the provided set of objects with primary key
+		/// </summary>
+		/// <param name="objects">An <see cref="IEnumerable"/> of the objects to insert.</param>
+		/// <param name="runInTransaction">A boolean indicating if the inserts should be wrapped in a transaction</param>
+		/// <returns>Number of objects deleted</returns>
+		public int DeleteAll (System.Collections.IEnumerable objects, bool runInTransaction = true)
+		{
+			var c = 0;
+			if (runInTransaction) {
+				RunInTransaction (() => {
+					foreach (var r in objects) {
+						c += Delete (r);
+					}
+				});
+			}
+			else {
+				foreach (var r in objects) {
+					c += Delete (r);
+				}
+			}
+			return c;
+		}
+
+		/// <summary>
 		/// Deletes all the objects from the specified table.
 		/// WARNING WARNING: Let me repeat. It deletes ALL the objects from the
 		/// specified table. Do you really want to do that?
