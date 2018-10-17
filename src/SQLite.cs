@@ -1919,8 +1919,8 @@ namespace SQLite
 		/// <summary>
 		/// Deletes the provided set of objects with primary key
 		/// </summary>
-		/// <param name="objects">An <see cref="IEnumerable"/> of the objects to insert.</param>
-		/// <param name="runInTransaction">A boolean indicating if the inserts should be wrapped in a transaction</param>
+		/// <param name="objects">An <see cref="IEnumerable"/> of the objects to delete.</param>
+		/// <param name="runInTransaction">A boolean indicating if the deletes should be wrapped in a transaction</param>
 		/// <returns>Number of objects deleted</returns>
 		public int DeleteAll (System.Collections.IEnumerable objects, bool runInTransaction = true)
 		{
