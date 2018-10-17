@@ -2181,7 +2181,23 @@ namespace SQLite
 	{
 	}
 
-	[AttributeUsage (AttributeTargets.Enum)]
+	[AttributeUsage (AttributeTargets.Property)]
+    class ForeignKeyAttribute : Attribute
+    {
+        public ForeignKeyAttribute(string parent, bool cascade = false)
+        {
+            Parent = parent;
+            CascadeDelete = cascade;
+        }
+
+        public string Parent
+        { get; private set; }
+
+        public bool CascadeDelete
+        { get; private set; }
+    }
+
+    [AttributeUsage (AttributeTargets.Enum)]
 	public class StoreAsTextAttribute : Attribute
 	{
 	}
@@ -2325,7 +2341,10 @@ namespace SQLite
 
 			public bool IsPK { get; private set; }
 
-			public IEnumerable<IndexedAttribute> Indices { get; set; }
+            public string ForeignKey { get; private set; }
+            public bool FKCascadeDelete { get; private set; }
+
+            public IEnumerable<IndexedAttribute> Indices { get; set; }
 
 			public bool IsNullable { get; private set; }
 
@@ -2365,7 +2384,13 @@ namespace SQLite
 				MaxStringLength = Orm.MaxStringLength (prop);
 
 				StoreAsText = prop.PropertyType.GetTypeInfo ().CustomAttributes.Any (x => x.AttributeType == typeof (StoreAsTextAttribute));
-			}
+
+                if (prop.GetCustomAttributes<ForeignKeyAttribute>().Count() > 0)
+                {
+                    ForeignKey = prop.GetCustomAttribute<ForeignKeyAttribute>().Parent;
+                    FKCascadeDelete = prop.GetCustomAttribute<ForeignKeyAttribute>().CascadeDelete;
+                }
+            }
 
 			public void SetValue (object obj, object val)
 			{
@@ -2467,7 +2492,14 @@ namespace SQLite
 				decl += "collate " + p.Collation + " ";
 			}
 
-			return decl;
+            if (!string.IsNullOrEmpty(p.ForeignKey))
+            {
+                decl += "references " + p.ForeignKey + " ";
+                if (p.FKCascadeDelete)
+                    decl += "ON DELETE CASCADE ";
+            }
+
+            return decl;
 		}
 
 		public static string SqlType (TableMapping.Column p, bool storeDateTimeAsTicks)
